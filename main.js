@@ -9,10 +9,6 @@ let outputSelected = outputOptions[0];
 let sortSelected = sortOptions[0];
 let searchString = '';
 
-const oReq = new XMLHttpRequest();
-oReq.open('GET', './system', true);
-oReq.responseType = 'arraybuffer';
-
 function cleanSkillName(skillName){
 	skillName = skillName.replace('_SPACE_', ' ');
 	skillName = skillName.replace('_DOT_', '.');
@@ -258,14 +254,14 @@ function loadSaveSlot(slot){
 	//document.querySelector('.col-8 > select:nth-child(1) > option:nth-child(7)').click();
 };
 
-oReq.onload = function (oEvent) {
-	const arrayBuffer = oReq.response;
-	saveFile = new Mhgu(new KaitaiStream(arrayBuffer));
+function loadSaveFile(arrayBuffer){
+		saveFile = new Mhgu(new KaitaiStream(arrayBuffer));
 
 	const slotSelect = document.getElementById('char-select-block');
 	const pSelectSection = document.getElementById('player-select-section');
 	slotSelect.classList.remove('d-none');
 
+	let saveSlotsShown = [];
 	if (saveFile.saveFile.p1Exists == 1){
 		const save = saveFile.saveFile.player1;
 
@@ -283,7 +279,7 @@ oReq.onload = function (oEvent) {
 		pSelectForm.addEventListener('click', (event) => { loadSaveSlot(1); });
 		pSelectSubSection.appendChild(pSelectForm);
 		pSelectSubSection.appendChild(pSelectLabel);
-		pSelectSection.appendChild(pSelectSubSection);
+		saveSlotsShown.push(pSelectSubSection);
 	};
 	if (saveFile.saveFile.p2Exists == 1){
 		const save = saveFile.saveFile.player2;
@@ -302,7 +298,7 @@ oReq.onload = function (oEvent) {
 		pSelectForm.addEventListener('click', (event) => { loadSaveSlot(2); });
 		pSelectSubSection.appendChild(pSelectForm);
 		pSelectSubSection.appendChild(pSelectLabel);
-		pSelectSection.appendChild(pSelectSubSection);
+		saveSlotsShown.push(pSelectSubSection);
 	};
 	if (saveFile.saveFile.p3Exists == 1){
 		const save = saveFile.saveFile.player3;
@@ -321,10 +317,73 @@ oReq.onload = function (oEvent) {
 		pSelectForm.addEventListener('click', (event) => { loadSaveSlot(3); });
 		pSelectSubSection.appendChild(pSelectForm);
 		pSelectSubSection.appendChild(pSelectLabel);
-		pSelectSection.appendChild(pSelectSubSection);
+		saveSlotsShown.push(pSelectSubSection);
 	};
+
+	pSelectSection.replaceChildren(...saveSlotsShown);
 
 	//document.querySelector('#p1-select').click();
 };
 
-oReq.send(null);
+document.getElementById('formFileSm').addEventListener('input', (event) => {
+	const file = event.target.files[0];
+	if(!file) return null;
+
+	reader = new FileReader();
+	reader.addEventListener('load', (event) => {
+		loadSaveFile(event.target.result);
+	});
+	reader.readAsArrayBuffer(file);
+});
+
+let dragCounter = 0;
+
+document.querySelector('#upload-block').addEventListener('click', (event) => {
+	document.getElementById('formFileSm').click();
+});
+
+document.querySelector('body').addEventListener('drop', (event) => {
+	event.preventDefault();
+
+	dragCounter = 0;
+	document.querySelector('#drag-message').classList.remove('text-info');
+
+	console.log('checking dragged')
+	if(event.dataTransfer.items.length != 1 || event.dataTransfer.items[0].kind != 'file') return null;
+
+	console.log('init dragged')
+	const file = event.dataTransfer.items[0].getAsFile();
+	if(!file) return null;
+
+	console.log('init fr')
+	reader = new FileReader();
+	reader.addEventListener('load', (event) => {
+		loadSaveFile(event.target.result);
+	});
+	reader.readAsArrayBuffer(file);
+});
+document.querySelector('body').addEventListener('dragover', (event) => {
+	event.preventDefault();
+});
+
+document.querySelector('body').addEventListener('dragenter', (event) => {
+	dragCounter++;
+	document.querySelector('#drag-message').classList.add('text-info');
+});
+document.querySelector('body').addEventListener('dragleave', (event) => {
+	dragCounter--;
+
+	if(dragCounter === 0)
+		document.querySelector('#drag-message').classList.remove('text-info');
+});
+
+//const oReq = new XMLHttpRequest();
+//oReq.open('GET', './system', true);
+//oReq.responseType = 'arraybuffer';
+//
+//oReq.onload = function (oEvent) {
+//	const arrayBuffer = oReq.response;
+//	loadSaveFile(arrayBuffer);
+//};
+//
+//oReq.send(null);

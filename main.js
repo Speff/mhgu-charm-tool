@@ -8,6 +8,7 @@ let talismansLoaded = null;
 let outputSelected = outputOptions[0];
 let sortSelected = sortOptions[0];
 let searchString = '';
+let dragCounter = 0;
 
 function cleanSkillName(skillName){
 	skillName = skillName.replace('_SPACE_', ' ');
@@ -255,7 +256,7 @@ function loadSaveSlot(slot){
 };
 
 function loadSaveFile(arrayBuffer){
-		saveFile = new Mhgu(new KaitaiStream(arrayBuffer));
+	saveFile = new Mhgu(new KaitaiStream(arrayBuffer));
 
 	const slotSelect = document.getElementById('char-select-block');
 	const pSelectSection = document.getElementById('player-select-section');
@@ -335,8 +336,6 @@ document.getElementById('formFileSm').addEventListener('input', (event) => {
 	});
 	reader.readAsArrayBuffer(file);
 });
-
-let dragCounter = 0;
 
 document.querySelector('#upload-block').addEventListener('click', (event) => {
 	document.getElementById('formFileSm').click();
